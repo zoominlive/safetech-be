@@ -3,7 +3,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn('users', 'status', {
-      type: Sequelize.ENUM('invited', 'activated'),
+      type: Sequelize.STRING(20),
       allowNull: false,
       defaultValue: 'invited'
     });

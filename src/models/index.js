@@ -9,7 +9,7 @@ let sequelize;
 
 sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
-  dialect: 'mysql',
+  dialect: 'postgres',
 });
 
 fs.readdirSync(__dirname)

@@ -8,7 +8,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.literal('(UUID())'),
+        defaultValue: Sequelize.literal('gen_random_uuid()'),
       },
       project_id: {
         allowNull: false,
@@ -47,7 +47,7 @@ module.exports = {
     // Backfill existing technician assignments from projects.technician_id
     await queryInterface.sequelize.query(`
       INSERT INTO project_technicians (id, project_id, user_id, created_at, updated_at)
-      SELECT UUID(), p.id, p.technician_id, NOW(), NOW()
+      SELECT gen_random_uuid(), p.id, p.technician_id, NOW(), NOW()
       FROM projects p
       WHERE p.technician_id IS NOT NULL
     `);

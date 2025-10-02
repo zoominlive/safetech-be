@@ -7,7 +7,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.literal('(UUID())')
+        defaultValue: Sequelize.literal('gen_random_uuid()')
       },
       project_id: {
         type: Sequelize.UUID,

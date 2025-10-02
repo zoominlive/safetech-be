@@ -15,6 +15,7 @@ const {
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Material, User, Sequelize } = require("../models");
+const { createCaseInsensitiveFilter } = require("../utils/caseInsensitiveFilter");
 const csv = require('csv-parser');
 const fs = require('fs');
 const { Parser } = require('json2csv');
@@ -337,7 +338,8 @@ exports.searchMaterials = async (req, res, next) => {
     };
 
     if (type) {
-      whereClause.type = type;
+      const typeFilter = createCaseInsensitiveFilter('type', type, 'type');
+      Object.assign(whereClause, typeFilter);
     }
 
     const { count, rows } = await Material.findAndCountAll({
@@ -461,7 +463,8 @@ exports.exportMaterials = async (req, res, next) => {
     };
 
     if (type) {
-      whereClause.type = type;
+      const typeFilter = createCaseInsensitiveFilter('type', type, 'type');
+      Object.assign(whereClause, typeFilter);
     }
 
     const materials = await Material.findAll({

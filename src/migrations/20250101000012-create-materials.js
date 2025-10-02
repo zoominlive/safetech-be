@@ -8,14 +8,14 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.literal('(UUID())'),
+        defaultValue: Sequelize.literal('gen_random_uuid()'),
       },
       name: {
         type: Sequelize.STRING(255),
         allowNull: false,
       },
       type: {
-        type: Sequelize.ENUM('standard', 'custom'),
+        type: Sequelize.STRING(20),
         allowNull: false,
       },
       created_by: {

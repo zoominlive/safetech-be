@@ -15,6 +15,7 @@ const {
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Project, User, Customer, Location, Report, ReportTemplate } = require("../models");
+const { createCaseInsensitiveFilter } = require("../utils/caseInsensitiveFilter");
 const { Op } = require("sequelize");
 
 exports.createProject = async (req, res, next) => {
@@ -145,14 +146,16 @@ exports.getAllProjects = async (req, res, next) => {
       technicianWhere = { id: req.user.id };
       technicianRequired = true;
     }
-    // Filter by status (now supports multiple statuses)
+    // Filter by status (now supports multiple statuses) - case-insensitive
     if (req.query.statusFilter && req.query.statusFilter !== "all") {
       let statusArray = req.query.statusFilter;
       if (!Array.isArray(statusArray)) {
         // Support comma-separated string or single value
         statusArray = statusArray.split(',').map(s => s.trim());
       }
-      whereCondition.status = { [Op.in]: statusArray };
+      
+      const statusFilter = createCaseInsensitiveFilter('status', statusArray, 'status');
+      Object.assign(whereCondition, statusFilter);
     }
     // Filter by Project Managers (pm_ids as array)
     if (req.query.pm_ids && Array.isArray(req.query.pm_ids)) {

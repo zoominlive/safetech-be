@@ -8,7 +8,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.literal('(UUID())'),
+        defaultValue: Sequelize.literal('gen_random_uuid()'),
       },
       first_name: {
         type: Sequelize.STRING,
@@ -23,11 +23,7 @@ module.exports = {
         allowNull: true
       },
       role: {
-        type: Sequelize.ENUM(
-          'Admin',
-          'Technician',
-          'Project Manager'
-        ),
+        type: Sequelize.STRING(50),
         allowNull: false,
       },
       email: {

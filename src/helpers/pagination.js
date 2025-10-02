@@ -91,10 +91,20 @@ module.exports.useFilter = (filter, model, associations = []) => {
         filterObj[key] = {
           [Op.eq]: new Date(value).toISOString(),
         };
-      } else {
-        // Default to LIKE for other fields
+      } else if (fieldType === 'UUID' || fieldType === 'UUIDV1' || fieldType === 'UUIDV4') {
+        // Exact match for UUIDs
         filterObj[key] = {
-          [Op.like]: `%${value}%`,
+          [Op.eq]: value,
+        };
+      } else if (fieldType === 'BOOLEAN') {
+        // Boolean match
+        filterObj[key] = {
+          [Op.eq]: value === 'true' || value === true,
+        };
+      } else {
+        // Default to ILIKE for case-insensitive search (PostgreSQL) on text fields
+        filterObj[key] = {
+          [Op.iLike]: `%${value}%`,
         };
       }
     }
@@ -123,10 +133,17 @@ module.exports.useFilter = (filter, model, associations = []) => {
       searchConditions = attributes
         .map((field) => {
           const fieldType = model.rawAttributes[field]?.type?.key;
+          
+          // Skip UUID, BOOLEAN, and other non-searchable types
+          if (['UUID', 'UUIDV1', 'UUIDV4', 'BOOLEAN'].includes(fieldType)) {
+            return null;
+          }
+          
           if (fieldType === 'DATE' && parsedSearchValue instanceof Date) {
+            // Use CAST for date comparison with text
             return {
               [field]: {
-                [Op.like]: `%${parsedSearchValue.toISOString().split('T')[0]}%`,
+                [Op.iLike]: `%${parsedSearchValue.toISOString().split('T')[0]}%`,
               },
             };
           } else if (fieldType === 'INTEGER' || fieldType === 'FLOAT') {
@@ -134,9 +151,11 @@ module.exports.useFilter = (filter, model, associations = []) => {
               return { [field]: { [Op.eq]: parsedSearchValue } };
             }
             return null;
-          } else {
-            return { [field]: { [Op.like]: `%${filter.search}%` } };
+          } else if (['STRING', 'TEXT', 'CHAR', 'VARCHAR'].includes(fieldType)) {
+            // Only apply ILIKE to text-based fields
+            return { [field]: { [Op.iLike]: `%${filter.search}%` } };
           }
+          return null;
         })
         .filter((condition) => condition !== null);
     }
@@ -146,7 +165,7 @@ module.exports.useFilter = (filter, model, associations = []) => {
       const nestedSearchConditions = associations.flatMap(({ alias, fields }) =>
         fields.map((nestedField) => ({
           [`$${alias}.${nestedField}$`]: {
-            [Op.like]: `%${filter.search}%`,
+            [Op.iLike]: `%${filter.search}%`,
           },
         }))
       );

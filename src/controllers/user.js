@@ -15,6 +15,7 @@ const {
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, User, Sequelize } = require("../models");
+const { createCaseInsensitiveFilter } = require("../utils/caseInsensitiveFilter");
 const AWS = require("aws-sdk");
 const EmailService = require("../services/emailService");
 const bcrypt = require("bcryptjs");
@@ -70,11 +71,14 @@ exports.createUser = async (req, res, next) => {
     const expires = new Date();
     expires.setHours(expires.getHours() + 24); // Token expires in 24 hours
 
+    // Normalize role to satisfy DB CHECK constraint
+    const normalizedRole = role ? require('../utils/caseInsensitiveFilter').normalizeRole(role) : undefined;
+
     const userCreated = await User.create(
       {
         email: email,
         phone: phone,
-        role: role,
+        role: normalizedRole,
         created_by: user.id,
         first_name: first_name,
         last_name: last_name,
@@ -146,9 +150,10 @@ exports.getAllUsers = async (req, res, next) => {
     } else {
       orderClause = [['created_at', 'DESC']]; // Default sort when no sortBy parameter
     }
-    // Add role filtering if role parameter is provided
+    // Add role filtering if role parameter is provided (case-insensitive)
     if (req.query.role) {
-      whereCondition.role = req.query.role;
+      const roleFilter = createCaseInsensitiveFilter('role', req.query.role, 'role');
+      Object.assign(whereCondition, roleFilter);
     }
     
     const options = {
@@ -199,11 +204,14 @@ exports.updateUser = async (req, res, next) => {
       return ErrorHandler(ApiError, req, res, next);
     }
 
+    // Normalize role if provided
+    const normalizedRole = role ? require('../utils/caseInsensitiveFilter').normalizeRole(role) : undefined;
+
     const updated = await User.update(
       {
         email: email,
         phone: phone,
-        role: role,
+        role: normalizedRole ?? undefined,
         created_by: created_by,
         first_name: first_name,
         last_name: last_name,

@@ -10,11 +10,11 @@ const MorganProd = {
 module.exports = {
   env: process.env.NODE_ENV,
   port: process.env.PORT,
-  DB: process.env.MYSQL_DB,
-  USER: process.env.MYSQL_USERNAME,
-  PASSWORD: process.env.MYSQL_PASSWORD,
-  HOST: process.env.MYSQL_HOST,
-  DIALECT: process.env.MYSQL_DIALECT,
+  DB: process.env.POSTGRES_DB || process.env.MYSQL_DB,
+  USER: process.env.POSTGRES_USERNAME || process.env.MYSQL_USERNAME,
+  PASSWORD: process.env.POSTGRES_PASSWORD || process.env.MYSQL_PASSWORD,
+  HOST: process.env.POSTGRES_HOST || process.env.MYSQL_HOST,
+  DIALECT: process.env.POSTGRES_DIALECT || process.env.MYSQL_DIALECT,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRESIN: process.env.JWT_EXPIRESIN,
 

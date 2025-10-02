@@ -186,6 +186,7 @@ exports.forgotPassword = async (req, res, next) => {
     const isUserExists = await User.findOne({
       where: { email: email.toLowerCase(), deactivated_user: false },
     });
+    console.log('isUserExists==>', isUserExists);
     if (!isUserExists) {
       const ApiError = new APIError(EMAIL_NO_FOUND, null, NOT_FOUND);
       return ErrorHandler(ApiError, req, res, next);
